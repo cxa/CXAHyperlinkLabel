@@ -38,11 +38,7 @@
 - (id)initWithFrame:(CGRect)frame
 {
   if (self = [super initWithFrame:frame]){
-    _linkAttributesWhenTouching = @{
-      NSUnderlineStyleAttributeName  : @(NSUnderlineStyleNone),
-      NSForegroundColorAttributeName : [UIColor colorWithHue:.61 saturation:.60 brightness:.86 alpha:1.00],
-      NSBackgroundColorAttributeName : [UIColor colorWithHue:.41 saturation:.00 brightness:.76 alpha:1.00],
-    };
+    _linkAttributesWhenTouching = @{ NSBackgroundColorAttributeName : [UIColor colorWithHue:.41 saturation:.00 brightness:.76 alpha:1.00] };
     self.userInteractionEnabled = YES;
   }
   
@@ -85,6 +81,63 @@
   
   [_URLs insertObject:URL atIndex:idx];
   [_URLRanges insertObject:rng atIndex:idx];
+}
+
+- (void)setURLs:(NSArray *)URLs
+         ranges:(NSArray *)ranges
+{
+  NSMutableDictionary *map = [@{} mutableCopy];
+  if (!_URLs){
+    _URLs = [@[] mutableCopy];
+    _URLRanges = [ranges mutableCopy];
+  } else {
+    [_URLRanges enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
+      map[obj] = _URLs[idx];
+    }];
+    [_URLRanges addObjectsFromArray:ranges];
+  }
+  
+  [ranges enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
+    map[obj] = URLs[idx];
+  }];
+  NSArray *unique = [[NSSet setWithArray:_URLRanges] allObjects];
+  _URLRanges = [unique mutableCopy];
+  [_URLRanges sortUsingComparator:^NSComparisonResult(id obj1, id obj2){
+    NSRange r1 = [obj1 rangeValue];
+    NSRange r2 = [obj2 rangeValue];
+    if (r1.location < r2.location)
+      return NSOrderedAscending;
+    
+    if (r1.location > r2.location)
+      return NSOrderedDescending;
+    
+    return NSOrderedSame;
+  }];
+  
+  [_URLs removeAllObjects];
+  [_URLRanges enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
+    [_URLs addObject:map[obj]];
+  }];
+}
+
+- (void)removeURLAtRange:(NSRange)range
+{
+  NSValue *v = [NSValue valueWithRange:range];
+  NSUInteger idx = [_URLRanges indexOfObject:v];
+  if (idx == NSNotFound)
+    return;
+  
+  [_URLRanges removeObjectAtIndex:idx];
+  [_URLs removeObjectAtIndex:idx];
+}
+
+- (void)removeAllURLs
+{
+  if (_URLs)
+    [_URLs removeAllObjects];
+  
+  if (_URLRanges)
+    [_URLRanges removeAllObjects];
 }
 
 - (NSURL *)URLAtPoint:(CGPoint)point
@@ -302,7 +355,7 @@
   [(__bridge NSArray *)runs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
     CTRunRef run = (__bridge CTRunRef)obj;
     CFRange range = CFRangeMake(0, 0);
-    CGFloat y = ceilf(lineOrigin.y);
+    CGFloat lineOriginY = ceilf(lineOrigin.y);
     const CGPoint *posPtr = CTRunGetPositionsPtr(run);
     CGPoint *pos = NULL;
     NSDictionary *attrs = (__bridge NSDictionary *)CTRunGetAttributes(run);
@@ -315,12 +368,17 @@
       }
       CGFloat ascender, descender, leading;
       CGFloat width = CTRunGetTypographicBounds(run, range, &ascender, &descender, &leading);
-      CGRect rect = CGRectMake(posPtr->x, y - descender - leading, width, ascender + descender);
+      CGRect rect = CGRectMake(posPtr->x, lineOriginY - descender - leading, width, ascender + descender);
       rect = CGRectIntegral(rect);
       rect = CGRectInset(rect, -2, -2);
-      if (posPtr->x == 0){
-        rect.origin.x = 0;
+      if (posPtr->x <= 0){
+        rect.origin.x += 2;
         rect.size.width -= 2;
+      }
+      
+      if (lineOriginY <= 0){
+        rect.origin.y += 2;
+        rect.size.height -= 2;
       }
       
       UIBezierPath *bp = [UIBezierPath bezierPathWithRoundedRect:rect cornerRadius:3.];
@@ -337,7 +395,7 @@
       CGContextSetShadowWithColor(context, shadow.shadowOffset, shadow.shadowBlurRadius, [shadow.shadowColor CGColor]);
     }
     
-    CGContextSetTextPosition(context, 0, y);
+    CGContextSetTextPosition(context, 0, lineOriginY);
     CTRunDraw(run, context, range);
     if (shadow)
       CGContextRestoreGState(context);
@@ -357,8 +415,8 @@
       
       CGContextSetStrokeColorWithColor(context, fgColor.CGColor);
       CGContextSetLineWidth(context, 1.);
-      CGContextMoveToPoint(context, posPtr->x, y-1.5);
-      CGContextAddLineToPoint(context, posPtr->x + width, y-1.5);
+      CGContextMoveToPoint(context, posPtr->x, lineOriginY-1.5);
+      CGContextAddLineToPoint(context, posPtr->x + width, lineOriginY-1.5);
       CGContextSaveGState(context);
       CGContextStrokePath(context);
       CGContextRestoreGState(context);

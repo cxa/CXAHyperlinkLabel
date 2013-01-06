@@ -42,7 +42,6 @@
   _label.numberOfLines = 0;
   _label.backgroundColor = [UIColor clearColor];
   _label.attributedText = as;
-  _label.linkAttributesWhenTouching = @{ NSBackgroundColorAttributeName : [UIColor colorWithHue:.41 saturation:.00 brightness:.76 alpha:1.00] };
   [URLs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
     [_label setURL:obj range:[URLRanges[idx] rangeValue]];
   }];

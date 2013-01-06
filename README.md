@@ -24,6 +24,9 @@ Use it as the `UILabel`. To support links inside text, first you need to extract
     @property (nonatomic, strong) NSDictionary *linkAttributesWhenTouching;
     
     - (void)setURL:(NSURL *)URL range:(NSRange)range;
+    - (void)setURLs:(NSArray *)URLs ranges:(NSArray *)ranges;
+    - (void)removeURLAtRange:(NSRange)range;
+    - (void)removeAllURLs;
     - (NSURL *)URLAtPoint:(CGPoint)point effectiveRange:(NSRangePointer)effectiveRange;
     
     @end

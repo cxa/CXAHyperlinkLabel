@@ -28,7 +28,7 @@ static htmlSAXHandler saxHandler;
                             URLs:(NSArray *__autoreleasing *)URLs
                        URLRanges:(NSArray *__autoreleasing *)URLRanges
 {
-  return [self stringWithHTMLText:HTMLText URLs:nil URLRanges:URLRanges];
+  return [self stringWithHTMLText:HTMLText baseURL:nil URLs:URLs URLRanges:URLRanges];
 }
 
 + (NSString *)stringWithHTMLText:(NSString *)HTMLText
