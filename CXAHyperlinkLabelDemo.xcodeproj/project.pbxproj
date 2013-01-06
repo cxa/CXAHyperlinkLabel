@@ -16,6 +16,11 @@
 		E058E2331695CC26009A0BCE /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = E058E2321695CC26009A0BCE /* Default.png */; };
 		E058E2351695CC26009A0BCE /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E058E2341695CC26009A0BCE /* Default@2x.png */; };
 		E058E2371695CC26009A0BCE /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E058E2361695CC26009A0BCE /* Default-568h@2x.png */; };
+		E058E2401695CC64009A0BCE /* CXAHyperlinkLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = E058E23F1695CC64009A0BCE /* CXAHyperlinkLabel.m */; };
+		E058E2491695DA25009A0BCE /* libxml2.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E058E2481695DA25009A0BCE /* libxml2.2.dylib */; };
+		E058E24B1695E2BA009A0BCE /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E058E24A1695E2BA009A0BCE /* CoreText.framework */; };
+		E058E252169718AC009A0BCE /* CXADemoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E058E251169718AC009A0BCE /* CXADemoViewController.m */; };
+		E0A3ACDD16989D7600676BA1 /* NSString+CXAHyperlinkParser.m in Sources */ = {isa = PBXBuildFile; fileRef = E0A3ACDC16989D7600676BA1 /* NSString+CXAHyperlinkParser.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +37,14 @@
 		E058E2321695CC26009A0BCE /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
 		E058E2341695CC26009A0BCE /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
 		E058E2361695CC26009A0BCE /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
+		E058E23E1695CC64009A0BCE /* CXAHyperlinkLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CXAHyperlinkLabel.h; sourceTree = "<group>"; };
+		E058E23F1695CC64009A0BCE /* CXAHyperlinkLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CXAHyperlinkLabel.m; sourceTree = "<group>"; };
+		E058E2481695DA25009A0BCE /* libxml2.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.2.dylib; path = usr/lib/libxml2.2.dylib; sourceTree = SDKROOT; };
+		E058E24A1695E2BA009A0BCE /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
+		E058E250169718AC009A0BCE /* CXADemoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CXADemoViewController.h; sourceTree = "<group>"; };
+		E058E251169718AC009A0BCE /* CXADemoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CXADemoViewController.m; sourceTree = "<group>"; };
+		E0A3ACDB16989D7600676BA1 /* NSString+CXAHyperlinkParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+CXAHyperlinkParser.h"; sourceTree = "<group>"; };
+		E0A3ACDC16989D7600676BA1 /* NSString+CXAHyperlinkParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+CXAHyperlinkParser.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,6 +52,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E058E24B1695E2BA009A0BCE /* CoreText.framework in Frameworks */,
+				E058E2491695DA25009A0BCE /* libxml2.2.dylib in Frameworks */,
 				E058E2211695CC25009A0BCE /* UIKit.framework in Frameworks */,
 				E058E2231695CC25009A0BCE /* Foundation.framework in Frameworks */,
 				E058E2251695CC25009A0BCE /* CoreGraphics.framework in Frameworks */,
@@ -51,6 +66,7 @@
 		E058E2111695CC25009A0BCE = {
 			isa = PBXGroup;
 			children = (
+				E058E23D1695CC2E009A0BCE /* CXAHyperlinkLabel */,
 				E058E2261695CC25009A0BCE /* CXAHyperlinkLabelDemo */,
 				E058E21F1695CC25009A0BCE /* Frameworks */,
 				E058E21D1695CC25009A0BCE /* Products */,
@@ -68,6 +84,8 @@
 		E058E21F1695CC25009A0BCE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E058E24A1695E2BA009A0BCE /* CoreText.framework */,
+				E058E2481695DA25009A0BCE /* libxml2.2.dylib */,
 				E058E2201695CC25009A0BCE /* UIKit.framework */,
 				E058E2221695CC25009A0BCE /* Foundation.framework */,
 				E058E2241695CC25009A0BCE /* CoreGraphics.framework */,
@@ -80,6 +98,8 @@
 			children = (
 				E058E22F1695CC26009A0BCE /* CXAAppDelegate.h */,
 				E058E2301695CC26009A0BCE /* CXAAppDelegate.m */,
+				E058E250169718AC009A0BCE /* CXADemoViewController.h */,
+				E058E251169718AC009A0BCE /* CXADemoViewController.m */,
 				E058E2271695CC25009A0BCE /* Supporting Files */,
 			);
 			path = CXAHyperlinkLabelDemo;
@@ -97,6 +117,17 @@
 				E058E2361695CC26009A0BCE /* Default-568h@2x.png */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		E058E23D1695CC2E009A0BCE /* CXAHyperlinkLabel */ = {
+			isa = PBXGroup;
+			children = (
+				E058E23E1695CC64009A0BCE /* CXAHyperlinkLabel.h */,
+				E058E23F1695CC64009A0BCE /* CXAHyperlinkLabel.m */,
+				E0A3ACDB16989D7600676BA1 /* NSString+CXAHyperlinkParser.h */,
+				E0A3ACDC16989D7600676BA1 /* NSString+CXAHyperlinkParser.m */,
+			);
+			name = CXAHyperlinkLabel;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -167,6 +198,9 @@
 			files = (
 				E058E22D1695CC25009A0BCE /* main.m in Sources */,
 				E058E2311695CC26009A0BCE /* CXAAppDelegate.m in Sources */,
+				E058E2401695CC64009A0BCE /* CXAHyperlinkLabel.m in Sources */,
+				E058E252169718AC009A0BCE /* CXADemoViewController.m in Sources */,
+				E0A3ACDD16989D7600676BA1 /* NSString+CXAHyperlinkParser.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -239,6 +273,7 @@
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "CXAHyperlinkLabelDemo/CXAHyperlinkLabelDemo-Prefix.pch";
+				HEADER_SEARCH_PATHS = "$(SDK_ROOT)/usr/include/libxml2";
 				INFOPLIST_FILE = "CXAHyperlinkLabelDemo/CXAHyperlinkLabelDemo-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
@@ -250,6 +285,7 @@
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "CXAHyperlinkLabelDemo/CXAHyperlinkLabelDemo-Prefix.pch";
+				HEADER_SEARCH_PATHS = "$(SDK_ROOT)/usr/include/libxml2";
 				INFOPLIST_FILE = "CXAHyperlinkLabelDemo/CXAHyperlinkLabelDemo-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
@@ -275,6 +311,7 @@
 				E058E23C1695CC26009A0BCE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
