@@ -10,7 +10,7 @@
 
 @class CXAHyperlinkLabel;
 
-typedef void (^CXAHyperlinkLabelURLHandler)(CXAHyperlinkLabel *label, NSURL *URL);
+typedef void (^CXAHyperlinkLabelURLHandler)(CXAHyperlinkLabel *label, NSURL *URL, NSRange range);
 
 @interface CXAHyperlinkLabel : UILabel
 
@@ -18,9 +18,9 @@ typedef void (^CXAHyperlinkLabelURLHandler)(CXAHyperlinkLabel *label, NSURL *URL
 @property (nonatomic, copy) CXAHyperlinkLabelURLHandler URLLongPressHandler;
 @property (nonatomic, strong) NSDictionary *linkAttributesWhenTouching;
 
-- (void)setURL:(NSURL *)URL range:(NSRange)range;
-- (void)setURLs:(NSArray *)URLs ranges:(NSArray *)ranges; 
-- (void)removeURLAtRange:(NSRange)range;
+- (void)setURL:(NSURL *)URL forRange:(NSRange)range;
+- (void)setURLs:(NSArray *)URLs forRanges:(NSArray *)ranges;
+- (void)removeURLForRange:(NSRange)range;
 - (void)removeAllURLs;
 - (NSURL *)URLAtPoint:(CGPoint)point effectiveRange:(NSRangePointer)effectiveRange;
 

@@ -11,6 +11,7 @@
 
 #define ZERORANGE ((NSRange){0, 0})
 #define LONGPRESS_DURATION .3
+#define LONGPRESS_ARG @[_touchingURL, [NSValue valueWithRange:_touchingURLRange]]
 
 @interface CXAHyperlinkLabel(){
   CFArrayRef _lines;
@@ -25,10 +26,10 @@
 }
 
 - (void)drawRuns:(CFArrayRef)runs inContext:(CGContextRef)context lineOrigin:(CGPoint)lineOrigin;
-- (NSURL *)handleTouches:(NSSet *)touches withEvent:(UIEvent *)event;
+- (void)handleTouches:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)highlightTouchingLinkAtRange:(NSRange)range;
 - (void)reset;
-- (void)longpressURL:(NSURL *)URL;
+- (void)longpress:(NSArray *)info;
 
 @end
 
@@ -59,7 +60,7 @@
 
 #pragma mark -
 - (void)setURL:(NSURL *)URL
-         range:(NSRange)range
+      forRange:(NSRange)range
 {
   if (!_URLs){
     _URLs = [@[] mutableCopy];
@@ -84,43 +85,20 @@
 }
 
 - (void)setURLs:(NSArray *)URLs
-         ranges:(NSArray *)ranges
+      forRanges:(NSArray *)ranges
 {
-  NSMutableDictionary *map = [@{} mutableCopy];
   if (!_URLs){
-    _URLs = [@[] mutableCopy];
+    _URLs = [URLs mutableCopy];
     _URLRanges = [ranges mutableCopy];
-  } else {
-    [_URLRanges enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
-      map[obj] = _URLs[idx];
-    }];
-    [_URLRanges addObjectsFromArray:ranges];
+    
+    return;
   }
   
-  [ranges enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
-    map[obj] = URLs[idx];
-  }];
-  NSArray *unique = [[NSSet setWithArray:_URLRanges] allObjects];
-  _URLRanges = [unique mutableCopy];
-  [_URLRanges sortUsingComparator:^NSComparisonResult(id obj1, id obj2){
-    NSRange r1 = [obj1 rangeValue];
-    NSRange r2 = [obj2 rangeValue];
-    if (r1.location < r2.location)
-      return NSOrderedAscending;
-    
-    if (r1.location > r2.location)
-      return NSOrderedDescending;
-    
-    return NSOrderedSame;
-  }];
-  
-  [_URLs removeAllObjects];
-  [_URLRanges enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
-    [_URLs addObject:map[obj]];
+  [URLs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+    [self setURL:obj forRange:[ranges[idx] rangeValue]];
   }];
 }
-
-- (void)removeURLAtRange:(NSRange)range
+- (void)removeURLForRange:(NSRange)range
 {
   NSValue *v = [NSValue valueWithRange:range];
   NSUInteger idx = [_URLRanges indexOfObject:v];
@@ -133,11 +111,8 @@
 
 - (void)removeAllURLs
 {
-  if (_URLs)
-    [_URLs removeAllObjects];
-  
-  if (_URLRanges)
-    [_URLRanges removeAllObjects];
+  _URLs = nil;
+  _URLRanges = nil;
 }
 
 - (NSURL *)URLAtPoint:(CGPoint)point
@@ -301,11 +276,12 @@
     _attributedTextBeforeTouching = self.attributedText;
   
   if (_touchingURL)
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(longpressURL:) object:_touchingURL];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(longpress:) object:LONGPRESS_ARG];
   
-  if ((_touchingURL = [self handleTouches:touches withEvent:event])){
+  [self handleTouches:touches withEvent:event];
+  if (_touchingURL){
     if (self.URLLongPressHandler){
-      [self performSelector:@selector(longpressURL:) withObject:_touchingURL afterDelay:LONGPRESS_DURATION];
+      [self performSelector:@selector(longpress:) withObject:LONGPRESS_ARG afterDelay:LONGPRESS_DURATION];
     }
   } else
     [super touchesBegan:touches withEvent:event];
@@ -315,11 +291,12 @@
            withEvent:(UIEvent *)event
 {
   if (_touchingURL)
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(longpressURL:) object:_touchingURL];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(longpress:) object:LONGPRESS_ARG];
   
-  if ((_touchingURL = [self URLAtPoint:[[touches anyObject] locationInView:self] effectiveRange:NULL])){
+  [self URLAtPoint:[[touches anyObject] locationInView:self] effectiveRange:&_touchingURLRange];
+  if (_touchingURL){
     if (self.URLClickHandler)
-      self.URLClickHandler(self, _touchingURL);
+      self.URLClickHandler(self, _touchingURL, _touchingURLRange);
   } else 
     [super touchesEnded:touches withEvent:event];
   
@@ -330,9 +307,9 @@
            withEvent:(UIEvent *)event
 {
   if (_touchingURL)
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(longpressURL:) object:_touchingURL];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(longpress:) object:LONGPRESS_ARG];
   
-  _touchingURL = [self handleTouches:touches withEvent:event];
+  [self handleTouches:touches withEvent:event];
   if (!_touchingURL)
     [super touchesMoved:touches withEvent:event];
 }
@@ -341,7 +318,7 @@
                withEvent:(UIEvent *)event
 {
   if (_touchingURL)
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(longpressURL:) object:_touchingURL];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(longpress:) object:LONGPRESS_ARG];
   
   [super touchesCancelled:touches withEvent:event];
   [self reset];
@@ -426,11 +403,11 @@
   }];
 }
 
-- (NSURL *)handleTouches:(NSSet *)touches
-               withEvent:(UIEvent *)event
+- (void)handleTouches:(NSSet *)touches
+            withEvent:(UIEvent *)event
 {
   NSRange prevHitURLRange = _touchingURLRange;
-  NSURL *URL = [self URLAtPoint:[[touches anyObject] locationInView:self] effectiveRange:&_touchingURLRange];
+  _touchingURL = [self URLAtPoint:[[touches anyObject] locationInView:self] effectiveRange:&_touchingURLRange];
   if (_touchingURLRange.length){
     if (!prevHitURLRange.length ||
         !NSEqualRanges(prevHitURLRange, _touchingURLRange))
@@ -439,8 +416,6 @@
     if (prevHitURLRange.length)
         self.attributedText = _attributedTextBeforeTouching;
   }
-  
-  return URL;
 }
 
 - (void)highlightTouchingLinkAtRange:(NSRange)range
@@ -455,18 +430,19 @@
 
 - (void)reset
 {
-  if (_touchingURLRange.length){
+  if (_touchingURL){
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(setAttributedText:) object:_attributedTextBeforeTouching];
     [self performSelector:@selector(setAttributedText:) withObject:_attributedTextBeforeTouching afterDelay:.3];
   }
   
   _touchingURLRange = ZERORANGE;
+  _touchingURL = nil;
   _attributedTextBeforeTouching = nil;
 }
 
-- (void)longpressURL:(NSURL *)URL
+- (void)longpress:(NSArray *)info
 {
-  self.URLLongPressHandler(self, URL);
+  self.URLLongPressHandler(self, info[0], [info[1] rangeValue]);
 }
 
 @end
