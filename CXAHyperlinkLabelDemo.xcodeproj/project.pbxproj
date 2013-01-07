@@ -21,6 +21,7 @@
 		E058E24B1695E2BA009A0BCE /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E058E24A1695E2BA009A0BCE /* CoreText.framework */; };
 		E058E252169718AC009A0BCE /* CXADemoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E058E251169718AC009A0BCE /* CXADemoViewController.m */; };
 		E0A3ACDD16989D7600676BA1 /* NSString+CXAHyperlinkParser.m in Sources */ = {isa = PBXBuildFile; fileRef = E0A3ACDC16989D7600676BA1 /* NSString+CXAHyperlinkParser.m */; };
+		E0DE70AB169AD48B00E18528 /* NSAttributedString+CXACoreTextFrameSize.m in Sources */ = {isa = PBXBuildFile; fileRef = E0DE70AA169AD48B00E18528 /* NSAttributedString+CXACoreTextFrameSize.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,6 +46,8 @@
 		E058E251169718AC009A0BCE /* CXADemoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CXADemoViewController.m; sourceTree = "<group>"; };
 		E0A3ACDB16989D7600676BA1 /* NSString+CXAHyperlinkParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+CXAHyperlinkParser.h"; sourceTree = "<group>"; };
 		E0A3ACDC16989D7600676BA1 /* NSString+CXAHyperlinkParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+CXAHyperlinkParser.m"; sourceTree = "<group>"; };
+		E0DE70A9169AD48B00E18528 /* NSAttributedString+CXACoreTextFrameSize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSAttributedString+CXACoreTextFrameSize.h"; sourceTree = "<group>"; };
+		E0DE70AA169AD48B00E18528 /* NSAttributedString+CXACoreTextFrameSize.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSAttributedString+CXACoreTextFrameSize.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,6 +127,8 @@
 			children = (
 				E058E23E1695CC64009A0BCE /* CXAHyperlinkLabel.h */,
 				E058E23F1695CC64009A0BCE /* CXAHyperlinkLabel.m */,
+				E0DE70A9169AD48B00E18528 /* NSAttributedString+CXACoreTextFrameSize.h */,
+				E0DE70AA169AD48B00E18528 /* NSAttributedString+CXACoreTextFrameSize.m */,
 				E0A3ACDB16989D7600676BA1 /* NSString+CXAHyperlinkParser.h */,
 				E0A3ACDC16989D7600676BA1 /* NSString+CXAHyperlinkParser.m */,
 			);
@@ -201,6 +206,7 @@
 				E058E2401695CC64009A0BCE /* CXAHyperlinkLabel.m in Sources */,
 				E058E252169718AC009A0BCE /* CXADemoViewController.m in Sources */,
 				E0A3ACDD16989D7600676BA1 /* NSString+CXAHyperlinkParser.m in Sources */,
+				E0DE70AB169AD48B00E18528 /* NSAttributedString+CXACoreTextFrameSize.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

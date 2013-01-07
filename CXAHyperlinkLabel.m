@@ -7,6 +7,7 @@
 //
 
 #import "CXAHyperlinkLabel.h"
+#import "NSAttributedString+CXACoreTextFrameSize.h"
 #import <CoreText/CoreText.h>
 
 #define ZERORANGE ((NSRange){0, 0})
@@ -227,38 +228,7 @@
 
 - (CGSize)sizeThatFits:(CGSize)size
 {
-  // workaround for broken CTFramesetterCreateWithAttributedString
-  // http://stackoverflow.com/a/10019378/395213
-  if (!self.attributedText)
-    return CGSizeZero;
-  
-  NSParagraphStyle *ps = [self.attributedText attribute:NSParagraphStyleAttributeName atIndex:0 effectiveRange:NULL];
-  id attrStr;
-  if (!ps ||
-      !ps.lineSpacing){
-    __block CGFloat maxLineSpacing = 0;
-    [self.attributedText enumerateAttribute:NSFontAttributeName inRange:NSMakeRange(0, [self.attributedText length]) options:0 usingBlock:^(id value, NSRange range, BOOL *stop) {
-      UIFont *f = value;
-      CGFloat lineSpacing = f.lineHeight - f.ascender + f.descender;
-      if (lineSpacing > maxLineSpacing)
-        maxLineSpacing = lineSpacing;
-    }];
-    NSMutableParagraphStyle *mps = ps ? [ps mutableCopy] : [[NSMutableParagraphStyle alloc] init];
-    mps.lineSpacing = maxLineSpacing;
-    attrStr = [self.attributedText mutableCopy];
-    [attrStr addAttributes:@{NSParagraphStyleAttributeName : mps} range:NSMakeRange(0, [attrStr length])];
-  } else {
-    attrStr = self.attributedText;
-  }
-  
-  CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef)attrStr);
-  CGSize constraints = size;
-  constraints.height = INT16_MAX;
-  CGSize suggestSize = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, CFRangeMake(0, [attrStr length]), NULL, constraints, NULL);
-  suggestSize.width = ceilf(suggestSize.width);
-  suggestSize.height = ceilf(suggestSize.height);
-  
-  return suggestSize;
+  return [self.attributedText cxa_coreTextFrameSizeWithConstraints:size];
 }
 
 - (void)sizeToFit

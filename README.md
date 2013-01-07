@@ -6,13 +6,14 @@ A drop-in and easy-to-use replacement for UILabel for iOS 6, supports handling l
 
 `CXAHyperlinkLabel` requires `CoreText.framework`, add it to *`Build Phases`* in your build target.
 
-Drop `CXAHyperlinkLabel.{h,m}` into your project, and add `#include "CXAHyperlinkLabel.h"` to the top of classes which will use it.
+Drop `CXAHyperlinkLabel.{h,m}` and `NSAttributedString+CXACoreTextFrameSize.{h,m}` into your project, and add `#include "CXAHyperlinkLabel.h"` to the top of classes which will use it.
 
 ## How to Use
 Use it as the `UILabel`. To support links inside text, first you need to extract the URLs and the releated ranges, and tell `CXAHyperlinkLabel` with the method `- (void)setURL:range:`. To change the style of current touching link, set it with `linkAttributesWhenTouching` property. You can also tell `CXAHyperlinkLabel` what to do after clicking and/or long pressing a link with the block properties `URLClickHandler` and `URLLongPressHandler`.
 
 ### Header At a Glance 
 
+#### `CXAHyperlinkLabel.h`
     @class CXAHyperlinkLabel;
     
     typedef void (^CXAHyperlinkLabelURLHandler)(CXAHyperlinkLabel *label, NSURL *URL, NSRange range);
@@ -28,6 +29,14 @@ Use it as the `UILabel`. To support links inside text, first you need to extract
     - (void)removeURLForRange:(NSRange)range;
     - (void)removeAllURLs;
     - (NSURL *)URLAtPoint:(CGPoint)point effectiveRange:(NSRangePointer)effectiveRange;
+    
+    @end
+
+#### `NSAttributedString+CXACoreTextFrameSize.h`
+
+    @interface NSAttributedString (CXACoreTextFrameSize)
+    
+    - (CGSize)cxa_coreTextFrameSizeWithConstraints:(CGSize)size;
     
     @end
 
