@@ -128,8 +128,8 @@ void _elementStart(void *context, const xmlChar *name, const xmlChar **atts)
       if (strcasecmp(att, "href") == 0 &&
           atts[i+1]){
         NSString *URLString = [NSString stringWithUTF8String:(char *)atts[i+1]];
-        if (sctx.baseURL)
-          URLString = [[URLString stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        if (sctx.baseURL) // make sure don't encode twice
+          URLString = [[URLString stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
         
         NSURL *URL = sctx.baseURL ? [NSURL URLWithString:URLString relativeToURL:sctx.baseURL] : [NSURL URLWithString:URLString];
         sctx.currentURL = URL;
