@@ -315,7 +315,7 @@
       }
       CGFloat ascender, descender, leading;
       CGFloat width = CTRunGetTypographicBounds(run, range, &ascender, &descender, &leading);
-      CGRect rect = CGRectMake(posPtr->x, lineOriginY - descender - leading, width, ascender + descender);
+      CGRect rect = CGRectMake(posPtr->x, lineOriginY - descender, width, ascender + descender);
       rect = CGRectIntegral(rect);
       rect = CGRectInset(rect, -2, -2);
       if (posPtr->x <= 0){

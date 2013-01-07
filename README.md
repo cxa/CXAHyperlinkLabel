@@ -58,6 +58,13 @@ This project also includes a category for NSString `NSString (CXAHyperlinkParser
     
     @end
 
+## Limitation
+
+In order to get positions for links, `CXAHyperlinkLabel` draws its text from the ground-up via Core Text. Some rarely used or hard-to-implement attributes is currently not supported yet:
+
+* `NSStrikethroughStyleAttributeName`
+* `hyphenationFactor` of `NSParagraphStyle`
+
 ## Creator
 
 * GitHub: <https://github.com/cxa>
