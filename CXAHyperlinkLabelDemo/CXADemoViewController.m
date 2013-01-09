@@ -43,10 +43,10 @@
   _label.backgroundColor = [UIColor clearColor];
   _label.attributedText = as;
   [_label setURLs:URLs forRanges:URLRanges];
-  _label.URLClickHandler = ^(CXAHyperlinkLabel *label, NSURL *URL, NSRange range){
+  _label.URLClickHandler = ^(CXAHyperlinkLabel *label, NSURL *URL, NSRange range, NSArray *textRects){
     [[[UIAlertView alloc] initWithTitle:@"URLClickHandler" message:[NSString stringWithFormat:NSLocalizedString(@"Click on the URL %@", nil), [URL absoluteString]] delegate:nil cancelButtonTitle:NSLocalizedString(@"Dismiss", nil) otherButtonTitles:nil] show];
   };
-  _label.URLLongPressHandler = ^(CXAHyperlinkLabel *label, NSURL *URL, NSRange range){
+  _label.URLLongPressHandler = ^(CXAHyperlinkLabel *label, NSURL *URL, NSRange range, NSArray *textRects){
     [[[UIActionSheet alloc] initWithTitle:[NSString stringWithFormat:@"URLLongPressHandler for URL: %@", [URL absoluteString]] delegate:nil cancelButtonTitle:NSLocalizedString(@"Cancel", nil) destructiveButtonTitle:nil otherButtonTitles:nil] showInView:self.view];
   };
   [self.view addSubview:_label];

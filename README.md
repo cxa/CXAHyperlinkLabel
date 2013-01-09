@@ -1,6 +1,6 @@
 # CXAHyperlinkLabel
 
-A drop-in and easy-to-use replacement for UILabel for iOS 6, supports handling link click and long press with block.
+A drop-in and easy-to-use replacement for UILabel for iOS 6, supports handling link click and long press with block that provides information for URL, the range and rect of URL.
 
 ## Installation
 
@@ -16,7 +16,7 @@ Use it as the `UILabel`. To support links inside text, first you need to extract
 #### `CXAHyperlinkLabel.h`
     @class CXAHyperlinkLabel;
     
-    typedef void (^CXAHyperlinkLabelURLHandler)(CXAHyperlinkLabel *label, NSURL *URL, NSRange range);
+    typedef void (^CXAHyperlinkLabelURLHandler)(CXAHyperlinkLabel *label, NSURL *URL, NSRange textRange, NSArray *textRects);
     
     @interface CXAHyperlinkLabel : UILabel
     
