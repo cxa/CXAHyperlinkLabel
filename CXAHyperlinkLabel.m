@@ -12,7 +12,7 @@
 
 #define ZERORANGE ((NSRange){0, 0})
 #define LONGPRESS_DURATION .3
-#define LONGPRESS_ARG @[_touchingURL, [NSValue valueWithRange:_touchingURLRange]]
+#define LONGPRESS_ARG @[_touchingURL, [NSValue valueWithRange:_touchingURLRange], _touchingRects]
 
 @interface CXAHyperlinkLabel(){
   CFArrayRef _lines;
@@ -20,13 +20,14 @@
   NSUInteger _numLines;
   NSURL *_touchingURL;
   NSRange _touchingURLRange;
+  NSMutableArray *_touchingRects;
   NSRangePointer _rangesCArray;
   NSAttributedString *_attributedTextBeforeTouching;
   NSMutableArray *_URLs;
   NSMutableArray *_URLRanges;
 }
 
-- (void)drawRuns:(CFArrayRef)runs inContext:(CGContextRef)context lineOrigin:(CGPoint)lineOrigin;
+- (void)drawRun:(CTRunRef)run inContext:(CGContextRef)context lineOrigin:(CGPoint)lineOrigin isTouchingRun:(BOOL)isTouchingRun;
 - (void)handleTouches:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)highlightTouchingLinkAtRange:(NSRange)range;
 - (void)reset;
@@ -95,7 +96,7 @@
     return;
   }
   
-  [URLs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+  [URLs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
     [self setURL:obj forRange:[ranges[idx] rangeValue]];
   }];
 }
@@ -206,25 +207,36 @@
     _lineImageRectsCArray[i] = imgBounds;
   }
   
-  CGContextTranslateCTM(context, 0, rectHeight);
-  CGContextScaleCTM(context, 1, -1);
-  CGContextSetTextMatrix(context, CGAffineTransformIdentity);
-  [(__bridge NSArray *)_lines enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
-    CTLineRef line = (__bridge CTLineRef)obj;
-    CFArrayRef runs = CTLineGetGlyphRuns(line);
-    [self drawRuns:runs inContext:context lineOrigin:lineOrigins[idx]];
-  }];
-  
-  free(lineOrigins);
-  CFRelease(framesetter);
-  CFRelease(path);
   if (_rangesCArray)
     free(_rangesCArray);
   
   _rangesCArray = malloc(sizeof(NSRange) * [_URLs count]);
   [_URLRanges enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
     _rangesCArray[idx] = [obj rangeValue];
-  }];}
+  }];
+  
+  if (!_touchingRects)
+    _touchingRects = [@[] mutableCopy];
+  else
+    [_touchingRects removeAllObjects];
+  
+  CGContextTranslateCTM(context, 0, rectHeight);
+  CGContextScaleCTM(context, 1, -1);
+  CGContextSetTextMatrix(context, CGAffineTransformIdentity);
+  [(__bridge NSArray *)_lines enumerateObjectsUsingBlock:^(id lineObj, NSUInteger lineIdx, BOOL *lineStop){
+    CTLineRef line = (__bridge CTLineRef)lineObj;
+    CFArrayRef runs = CTLineGetGlyphRuns(line);
+    [(__bridge NSArray *)runs enumerateObjectsUsingBlock:^(id runObj, NSUInteger runIdx, BOOL *runStop){
+      CTRunRef run = (__bridge CTRunRef)runObj;
+      CFRange cfrng = CTRunGetStringRange(run);
+      [self drawRun:run inContext:context lineOrigin:lineOrigins[lineIdx] isTouchingRun:NSLocationInRange(cfrng.location, _touchingURLRange)];
+    }];
+  }];
+  
+  free(lineOrigins);
+  CFRelease(framesetter);
+  CFRelease(path);
+}
 
 - (CGSize)sizeThatFits:(CGSize)size
 {
@@ -266,7 +278,7 @@
   [self URLAtPoint:[[touches anyObject] locationInView:self] effectiveRange:&_touchingURLRange];
   if (_touchingURL){
     if (self.URLClickHandler)
-      self.URLClickHandler(self, _touchingURL, _touchingURLRange);
+      self.URLClickHandler(self, _touchingURL, _touchingURLRange, _touchingRects);
   } else 
     [super touchesEnded:touches withEvent:event];
   
@@ -295,39 +307,39 @@
 }
 
 #pragma mark - privates
-- (void)drawRuns:(CFArrayRef)runs
-       inContext:(CGContextRef)context
-      lineOrigin:(CGPoint)lineOrigin
+- (void)drawRun:(CTRunRef)run
+      inContext:(CGContextRef)context
+     lineOrigin:(CGPoint)lineOrigin
+  isTouchingRun:(BOOL)isTouchingRun
 {
-  [(__bridge NSArray *)runs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
-    CTRunRef run = (__bridge CTRunRef)obj;
-    CFRange range = CFRangeMake(0, 0);
-    CGFloat lineOriginY = ceilf(lineOrigin.y);
-    const CGPoint *posPtr = CTRunGetPositionsPtr(run);
-    CGPoint *pos = NULL;
-    NSDictionary *attrs = (__bridge NSDictionary *)CTRunGetAttributes(run);
-    UIColor *bgColor = attrs[NSBackgroundColorAttributeName];
+  CFRange range = CFRangeMake(0, 0);
+  CGFloat lineOriginY = ceilf(lineOrigin.y);
+  const CGPoint *posPtr = CTRunGetPositionsPtr(run);
+  CGPoint *pos = NULL;
+  NSDictionary *attrs = (__bridge NSDictionary *)CTRunGetAttributes(run);
+  UIColor *bgColor = attrs[NSBackgroundColorAttributeName];
+  if (isTouchingRun || bgColor){
+    if (!posPtr){
+      pos = malloc(sizeof(CGPoint));
+      CTRunGetPositions(run, CFRangeMake(0, 1), pos);
+      posPtr = pos;
+    }
+    CGFloat ascender, descender, leading;
+    CGFloat width = CTRunGetTypographicBounds(run, range, &ascender, &descender, &leading);
+    CGRect rect = CGRectMake(posPtr->x, lineOriginY - descender, width, ascender + descender);
+    rect = CGRectIntegral(rect);
+    rect = CGRectInset(rect, -2, -2);
+    if (posPtr->x <= 0){
+      rect.origin.x += 2;
+      rect.size.width -= 2;
+    }
+    
+    if (lineOriginY <= 0){
+      rect.origin.y += 2;
+      rect.size.height -= 2;
+    }
+    
     if (bgColor){
-      if (!posPtr){
-        pos = malloc(sizeof(CGPoint));
-        CTRunGetPositions(run, CFRangeMake(0, 1), pos);
-        posPtr = pos;
-      }
-      CGFloat ascender, descender, leading;
-      CGFloat width = CTRunGetTypographicBounds(run, range, &ascender, &descender, &leading);
-      CGRect rect = CGRectMake(posPtr->x, lineOriginY - descender, width, ascender + descender);
-      rect = CGRectIntegral(rect);
-      rect = CGRectInset(rect, -2, -2);
-      if (posPtr->x <= 0){
-        rect.origin.x += 2;
-        rect.size.width -= 2;
-      }
-      
-      if (lineOriginY <= 0){
-        rect.origin.y += 2;
-        rect.size.height -= 2;
-      }
-      
       UIBezierPath *bp = [UIBezierPath bezierPathWithRoundedRect:rect cornerRadius:3.];
       CGContextSaveGState(context);
       CGContextAddPath(context, bp.CGPath);
@@ -336,41 +348,46 @@
       CGContextRestoreGState(context);
     }
     
-    NSShadow *shadow = attrs[NSShadowAttributeName];
-    if (shadow){
-      CGContextSaveGState(context);
-      CGContextSetShadowWithColor(context, shadow.shadowOffset, shadow.shadowBlurRadius, [shadow.shadowColor CGColor]);
+    if (isTouchingRun){
+      rect.origin.y = CGRectGetHeight(self.bounds) - CGRectGetMaxY(rect);
+      [_touchingRects addObject:[NSValue valueWithCGRect:rect]];
+    }
+  }
+  
+  NSShadow *shadow = attrs[NSShadowAttributeName];
+  if (shadow){
+    CGContextSaveGState(context);
+    CGContextSetShadowWithColor(context, shadow.shadowOffset, shadow.shadowBlurRadius, [shadow.shadowColor CGColor]);
+  }
+  
+  CGContextSetTextPosition(context, 0, lineOriginY);
+  CTRunDraw(run, context, range);
+  if (shadow)
+    CGContextRestoreGState(context);
+  
+  NSNumber *underlineStyle = attrs[NSUnderlineStyleAttributeName];
+  if (underlineStyle && [underlineStyle intValue] == NSUnderlineStyleSingle){
+    UIColor *fgColor = attrs[NSForegroundColorAttributeName];
+    if (!fgColor)
+      fgColor = [UIColor blackColor];
+    
+    CGFloat width = CTRunGetTypographicBounds(run, range, NULL, NULL, NULL);
+    if (!posPtr){
+      pos = malloc(sizeof(CGPoint));
+      CTRunGetPositions(run, CFRangeMake(0, 1), pos);
+      posPtr = pos;
     }
     
-    CGContextSetTextPosition(context, 0, lineOriginY);
-    CTRunDraw(run, context, range);
-    if (shadow)
-      CGContextRestoreGState(context);
-    
-    NSNumber *underlineStyle = attrs[NSUnderlineStyleAttributeName];
-    if (underlineStyle && [underlineStyle intValue] == NSUnderlineStyleSingle){
-      UIColor *fgColor = attrs[NSForegroundColorAttributeName];
-      if (!fgColor)
-        fgColor = [UIColor blackColor];
-      
-      CGFloat width = CTRunGetTypographicBounds(run, range, NULL, NULL, NULL);
-      if (!posPtr){
-        pos = malloc(sizeof(CGPoint));
-        CTRunGetPositions(run, CFRangeMake(0, 1), pos);
-        posPtr = pos;
-      }
-      
-      CGContextSetStrokeColorWithColor(context, fgColor.CGColor);
-      CGContextSetLineWidth(context, 1.);
-      CGContextMoveToPoint(context, posPtr->x, lineOriginY-1.5);
-      CGContextAddLineToPoint(context, posPtr->x + width, lineOriginY-1.5);
-      CGContextSaveGState(context);
-      CGContextStrokePath(context);
-      CGContextRestoreGState(context);
-      if (pos)
-        free(pos);
-    }
-  }];
+    CGContextSetStrokeColorWithColor(context, fgColor.CGColor);
+    CGContextSetLineWidth(context, 1.);
+    CGContextMoveToPoint(context, posPtr->x, lineOriginY-1.5);
+    CGContextAddLineToPoint(context, posPtr->x + width, lineOriginY-1.5);
+    CGContextSaveGState(context);
+    CGContextStrokePath(context);
+    CGContextRestoreGState(context);
+    if (pos)
+      free(pos);
+  }
 }
 
 - (void)handleTouches:(NSSet *)touches
@@ -412,7 +429,7 @@
 
 - (void)longpress:(NSArray *)info
 {
-  self.URLLongPressHandler(self, info[0], [info[1] rangeValue]);
+  self.URLLongPressHandler(self, info[0], [info[1] rangeValue], info[2]);
 }
 
 @end

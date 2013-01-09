@@ -10,7 +10,8 @@
 
 @class CXAHyperlinkLabel;
 
-typedef void (^CXAHyperlinkLabelURLHandler)(CXAHyperlinkLabel *label, NSURL *URL, NSRange range);
+// The URL may be broken into 2 or more lines, that's why CXAHyperlinkLabel provide textRects but not textRect
+typedef void (^CXAHyperlinkLabelURLHandler)(CXAHyperlinkLabel *label, NSURL *URL, NSRange textRange, NSArray *textRects);
 
 @interface CXAHyperlinkLabel : UILabel
 
