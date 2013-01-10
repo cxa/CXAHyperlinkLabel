@@ -313,6 +313,7 @@
   isTouchingRun:(BOOL)isTouchingRun
 {
   CFRange range = CFRangeMake(0, 0);
+  CGFloat lineOriginX = ceilf(lineOrigin.x);
   CGFloat lineOriginY = ceilf(lineOrigin.y);
   const CGPoint *posPtr = CTRunGetPositionsPtr(run);
   CGPoint *pos = NULL;
@@ -326,10 +327,10 @@
     }
     CGFloat ascender, descender, leading;
     CGFloat width = CTRunGetTypographicBounds(run, range, &ascender, &descender, &leading);
-    CGRect rect = CGRectMake(posPtr->x, lineOriginY - descender, width, ascender + descender);
+    CGRect rect = CGRectMake(lineOriginX + posPtr->x, lineOriginY - descender, width, ascender + descender);
     rect = CGRectIntegral(rect);
     rect = CGRectInset(rect, -2, -2);
-    if (posPtr->x <= 0){
+    if (lineOriginX + posPtr->x <= 0){
       rect.origin.x += 2;
       rect.size.width -= 2;
     }
@@ -360,7 +361,7 @@
     CGContextSetShadowWithColor(context, shadow.shadowOffset, shadow.shadowBlurRadius, [shadow.shadowColor CGColor]);
   }
   
-  CGContextSetTextPosition(context, 0, lineOriginY);
+  CGContextSetTextPosition(context, lineOriginX, lineOriginY);
   CTRunDraw(run, context, range);
   if (shadow)
     CGContextRestoreGState(context);
@@ -380,8 +381,8 @@
     
     CGContextSetStrokeColorWithColor(context, fgColor.CGColor);
     CGContextSetLineWidth(context, 1.);
-    CGContextMoveToPoint(context, posPtr->x, lineOriginY-1.5);
-    CGContextAddLineToPoint(context, posPtr->x + width, lineOriginY-1.5);
+    CGContextMoveToPoint(context, lineOriginX + posPtr->x, lineOriginY-1.5);
+    CGContextAddLineToPoint(context, lineOriginX + posPtr->x + width, lineOriginY-1.5);
     CGContextSaveGState(context);
     CGContextStrokePath(context);
     CGContextRestoreGState(context);
