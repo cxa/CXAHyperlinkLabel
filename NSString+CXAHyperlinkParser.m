@@ -37,7 +37,7 @@ static htmlSAXHandler saxHandler;
                        URLRanges:(NSArray *__autoreleasing *)URLRanges
 {
   HTMLSAXHandlerContext *ctx = [[HTMLSAXHandlerContext alloc] init];
-  ctx.plainText = [@"" mutableCopy];
+  ctx.plainText = [NSMutableString string];
   ctx.baseURL = baseURL;
   if (URLs || URLRanges){
     ctx.URLs = [@[] mutableCopy];
@@ -118,18 +118,16 @@ static htmlSAXHandler saxHandler = {
 void _elementStart(void *context, const xmlChar *name, const xmlChar **atts)
 {
   HTMLSAXHandlerContext *sctx = (__bridge HTMLSAXHandlerContext *)context;
-  if (!sctx.URLs)
-    return;
-  
-  if (strcasecmp((char *)name, "a") == 0){
+  if (sctx.URLs &&
+      strcasecmp((char *)name, "a") == 0){
     int i = 0;
     char *att = (char *)atts[i];
     do {
       if (strcasecmp(att, "href") == 0 &&
           atts[i+1]){
         NSString *URLString = [NSString stringWithUTF8String:(char *)atts[i+1]];
-        if (sctx.baseURL) // make sure don't encode twice
-          URLString = [[URLString stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        if (sctx.baseURL)
+          URLString = [URLString stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]];
         
         NSURL *URL = sctx.baseURL ? [NSURL URLWithString:URLString relativeToURL:sctx.baseURL] : [NSURL URLWithString:URLString];
         sctx.currentURL = URL;
@@ -137,16 +135,22 @@ void _elementStart(void *context, const xmlChar *name, const xmlChar **atts)
         break;
       }
     } while ((att = (char *)atts[i++]));
+  } else if (strcasecmp((char *)name, "li") == 0){
+    [sctx.plainText appendFormat:[sctx.plainText length] ? @"\n☙%C" : @"☙%C", (unichar)0xa0];
+  } else if (strcasecmp((char *)name, "dd") == 0 ||
+             strcasecmp((char *)name, "dt") == 0){
+    [sctx.plainText appendFormat:@"\n\t%C", (unichar)0xa0];
+  } else if (strcasecmp((char *)name, "p") == 0){
+    if ([sctx.plainText length])
+      [sctx.plainText appendFormat:@"\n\n"];
   }
 }
 
 void _elementEnd(void *context, const xmlChar *name)
 {
   HTMLSAXHandlerContext *sctx = (__bridge HTMLSAXHandlerContext *)context;
-  if (!sctx.URLs)
-    return;
-  
-  if (strcasecmp((char *)name, "a") == 0 &&
+  if (sctx.URLs &&
+      strcasecmp((char *)name, "a") == 0 &&
       sctx.currentURL){
     NSRange range = NSMakeRange(sctx.currentLocation, [sctx.plainText length] - sctx.currentLocation);
     [sctx.URLs addObject:sctx.currentURL];
@@ -162,5 +166,6 @@ void _characters(void *context, const xmlChar *ch, int len)
   HTMLSAXHandlerContext *sctx = (__bridge HTMLSAXHandlerContext *)context;
   NSString *string = [NSString stringWithUTF8String:(char *)ch];
   string = [string stringByReplacingOccurrencesOfString:@"\r" withString:@""];
+  string = [string stringByReplacingOccurrencesOfString:@"\n" withString:@""];
   [sctx.plainText appendString:string];
 }

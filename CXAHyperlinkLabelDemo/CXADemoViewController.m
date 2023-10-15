@@ -22,16 +22,15 @@
 
 - (id)init
 {
-  if (self = [super initWithNibName:nil bundle:nil]){
-    
-  }
+  if (!(self = [super initWithNibName:nil bundle:nil]))
+    return nil;
   
   return self;
 }
 
 - (void)loadView
 {
-  UIScrollView *sv = [[UIScrollView alloc] initWithFrame:[UIScreen mainScreen].applicationFrame];
+  UIScrollView *sv = [[UIScrollView alloc] initWithFrame:[UIScreen mainScreen].bounds];
   sv.contentSize = sv.bounds.size;
   self.view  = sv;
   self.view.backgroundColor = [UIColor colorWithHue:0 saturation:0 brightness:.9 alpha:1];
@@ -43,11 +42,20 @@
   _label.backgroundColor = [UIColor clearColor];
   _label.attributedText = as;
   [_label setURLs:URLs forRanges:URLRanges];
+  __weak typeof(self) weakSelf = self;
   _label.URLClickHandler = ^(CXAHyperlinkLabel *label, NSURL *URL, NSRange range, NSArray *textRects){
-    [[[UIAlertView alloc] initWithTitle:@"URLClickHandler" message:[NSString stringWithFormat:NSLocalizedString(@"Click on the URL %@", nil), [URL absoluteString]] delegate:nil cancelButtonTitle:NSLocalizedString(@"Dismiss", nil) otherButtonTitles:nil] show];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"URLClickHandler" message:[NSString stringWithFormat:NSLocalizedString(@"Click on the URL %@", nil), [URL absoluteString]] preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Dismiss", nil)  style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+      [alert dismissViewControllerAnimated:YES completion:nil];
+    }]];
+    [weakSelf presentViewController:alert animated:YES completion:nil];
   };
   _label.URLLongPressHandler = ^(CXAHyperlinkLabel *label, NSURL *URL, NSRange range, NSArray *textRects){
-    [[[UIActionSheet alloc] initWithTitle:[NSString stringWithFormat:@"URLLongPressHandler for URL: %@", [URL absoluteString]] delegate:nil cancelButtonTitle:NSLocalizedString(@"Cancel", nil) destructiveButtonTitle:nil otherButtonTitles:nil] showInView:self.view];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"URLLongPressHandler" message:[NSString stringWithFormat:@"URLLongPressHandler for URL: %@", [URL absoluteString]] preferredStyle:UIAlertControllerStyleActionSheet];
+    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Dismiss", nil)  style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+      [alert dismissViewControllerAnimated:YES completion:nil];
+    }]];
+    [weakSelf presentViewController:alert animated:YES completion:nil];
   };
   [self.view addSubview:_label];
 }
@@ -59,7 +67,7 @@
   size.height = INT16_MAX;
   CGSize labelSize = [_label sizeThatFits:size];
   labelSize.width = size.width;
-  _label.frame = (CGRect){CGPointMake(margin, margin), labelSize};
+  _label.frame = (CGRect){CGPointMake(margin, margin+self.view.safeAreaInsets.top), labelSize};
   CGFloat height = CGRectGetMaxY(_label.frame) + margin;
   if (height < CGRectGetHeight(self.view.bounds))
     height = CGRectGetHeight(self.view.bounds);

@@ -39,10 +39,10 @@
   
   CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef)attrStr);
   CGSize constraints = size;
-  constraints.height = INT16_MAX;
   CGSize suggestSize = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, CFRangeMake(0, [attrStr length]), NULL, constraints, NULL);
-  suggestSize.width = ceilf(suggestSize.width);
-  suggestSize.height = ceilf(suggestSize.height);
+  suggestSize.width = ceil(suggestSize.width);
+  suggestSize.height = ceil(suggestSize.height);
+  CFRelease(framesetter);
   
   return suggestSize;
 }

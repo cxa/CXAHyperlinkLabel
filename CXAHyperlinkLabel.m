@@ -25,6 +25,7 @@
   NSAttributedString *_attributedTextBeforeTouching;
   NSMutableArray *_URLs;
   NSMutableArray *_URLRanges;
+  BOOL _isRetina;
 }
 
 - (void)drawRun:(CTRunRef)run inContext:(CGContextRef)context lineOrigin:(CGPoint)lineOrigin isTouchingRun:(BOOL)isTouchingRun;
@@ -42,6 +43,8 @@
 {
   if (self = [super initWithFrame:frame]){
     _linkAttributesWhenTouching = @{ NSBackgroundColorAttributeName : [UIColor colorWithHue:.41 saturation:.00 brightness:.76 alpha:1.00] };
+    _underlineColor = [UIColor lightGrayColor];
+    _isRetina = [UIScreen mainScreen].scale > 1.;
     self.userInteractionEnabled = YES;
   }
   
@@ -189,7 +192,8 @@
   if (_lines)
     CFRelease(_lines);
   
-  _lines = CTFrameGetLines(frame);  
+  _lines = CTFrameGetLines(frame);
+  _lines = CFRetain(_lines);
   _numLines = CFArrayGetCount(_lines);
   CGPoint *lineOrigins = malloc(sizeof(CGPoint) * _numLines);
   CTFrameGetLineOrigins(frame, CFRangeMake(0, _numLines), lineOrigins);
@@ -235,6 +239,7 @@
   
   free(lineOrigins);
   CFRelease(framesetter);
+  CFRelease(frame);
   CFRelease(path);
 }
 
@@ -313,8 +318,8 @@
   isTouchingRun:(BOOL)isTouchingRun
 {
   CFRange range = CFRangeMake(0, 0);
-  CGFloat lineOriginX = ceilf(lineOrigin.x);
-  CGFloat lineOriginY = ceilf(lineOrigin.y);
+  CGFloat lineOriginX = ceil(lineOrigin.x);
+  CGFloat lineOriginY = ceil(lineOrigin.y);
   const CGPoint *posPtr = CTRunGetPositionsPtr(run);
   CGPoint *pos = NULL;
   NSDictionary *attrs = (__bridge NSDictionary *)CTRunGetAttributes(run);
@@ -379,10 +384,10 @@
       posPtr = pos;
     }
     
-    CGContextSetStrokeColorWithColor(context, fgColor.CGColor);
+    CGContextSetStrokeColorWithColor(context, self.underlineColor.CGColor);
     CGContextSetLineWidth(context, 1.);
-    CGContextMoveToPoint(context, lineOriginX + posPtr->x, lineOriginY-1.5);
-    CGContextAddLineToPoint(context, lineOriginX + posPtr->x + width, lineOriginY-1.5);
+    CGContextMoveToPoint(context, lineOriginX + posPtr->x, lineOriginY);
+    CGContextAddLineToPoint(context, lineOriginX + posPtr->x + width, lineOriginY);
     CGContextSaveGState(context);
     CGContextStrokePath(context);
     CGContextRestoreGState(context);

@@ -18,6 +18,7 @@ typedef void (^CXAHyperlinkLabelURLHandler)(CXAHyperlinkLabel *label, NSURL *URL
 @property (nonatomic, copy) CXAHyperlinkLabelURLHandler URLClickHandler;
 @property (nonatomic, copy) CXAHyperlinkLabelURLHandler URLLongPressHandler;
 @property (nonatomic, strong) NSDictionary *linkAttributesWhenTouching;
+@property (nonatomic, strong) UIColor *underlineColor;
 
 - (void)setURL:(NSURL *)URL forRange:(NSRange)range;
 - (void)setURLs:(NSArray *)URLs forRanges:(NSArray *)ranges;
