@@ -68,7 +68,7 @@ In order to get positions for links, `CXAHyperlinkLabel` draws its text from the
 ## Creator
 
 * GitHub: <https://github.com/cxa>
-* X: [@_realazy](https://x.com/_realazy)
+* X: [@\_c_x_a\_](https://x.com/_c_x_a_)
 * Apps available in App Store: <http://lazyapps.com>
 
 ## License
